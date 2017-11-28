@@ -29,7 +29,7 @@ import java.util.ResourceBundle;
 
 public class LoginController {
     private HttpURLConnection connection = null;
-    final private String URL = "http://localhost:8080/messenger/";
+    final private String URL = "http://192.168.137.1:8080/mess/";
 
 
     @FXML
@@ -57,7 +57,8 @@ public class LoginController {
     @FXML
     void bntClickLogin(MouseEvent event) {
         try {
-            String url = URL + "login?name=" + loginUser.getText().toString() + "&password=" + passLogin.getText().toString();
+            String url = URL + "login?login=" + loginUser.getText().toString() + "&password=" + passLogin.getText().toString();
+
             connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("GET");
             connection.setDefaultUseCaches(false);
@@ -72,7 +73,6 @@ public class LoginController {
                 System.out.println(line);
             }else{
                 System.out.println("fail "+connection.getResponseCode() + ", " +connection.getResponseMessage());
-
             }
 
         }catch (Throwable cause){
