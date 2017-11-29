@@ -29,7 +29,8 @@ import java.util.ResourceBundle;
 
 public class LoginController {
     private HttpURLConnection connection = null;
-    final private String URL = "http://192.168.137.1:8080/mess/";
+    //final private String URL = "http://192.168.137.1:8080/mess/";
+    final private String URL = "http://localhost:8080/mess/";
 
 
     @FXML
@@ -69,10 +70,19 @@ public class LoginController {
             if(HttpURLConnection.HTTP_OK == connection.getResponseCode()){
                 BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 String line = in.readLine();
-
+                if(line == null) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setContentText("Пользователь не найден");
+                    alert.setHeaderText("Ошибка!");
+                    alert.showAndWait();
+                }
                 System.out.println(line);
             }else{
                 System.out.println("fail "+connection.getResponseCode() + ", " +connection.getResponseMessage());
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setContentText("Ошибка подключения " + connection.getResponseCode());
+                alert.setHeaderText("Ошибка!");
+                alert.showAndWait();
             }
 
         }catch (Throwable cause){
