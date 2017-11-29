@@ -27,10 +27,14 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
+import static sample.CheckInput.checkForInputName;
+import static sample.CheckInput.deleteSpace;
+import static sample.CheckInput.firstUpperCase;
 
 public class RegisterController {
     private HttpURLConnection connection = null;
@@ -69,36 +73,6 @@ public class RegisterController {
     }
 
     @FXML
-    public void initialize() {
-       /* btnRegister.setDisable(false);
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setHeaderText(null);
-        alert.setContentText("Превышение допустимого значения");
-        idLogin.textProperty().addListener((observable, oldValue, newValue) -> {
-            if(newValue.length()>40){
-                alert.showAndWait();
-
-            }
-        });
-        idPass.textProperty().addListener((observable, oldValue, newValue) -> {
-            if(idPass.getText().length()>5){
-                alert.showAndWait();
-                idPass.clear();
-            }
-        });
-        idName.textProperty().addListener((observable, oldValue, newValue)->{
-            if(newValue.length()>40){
-                alert.showAndWait();
-            }
-        });
-        idSecondName.textProperty().addListener((observable, oldValue, newValue)->{
-            if(newValue.length()>40){
-                alert.showAndWait();
-            }
-        });*/
-    }
-
-    @FXML
     void btnRegister(MouseEvent event) throws Exception {
         name = idName.getText();
         secondName = idSecondName.getText();
@@ -127,7 +101,6 @@ public class RegisterController {
             alert.showAndWait();
             return;
         }
-
             if (fileImage != null) {
                 try {
                     byte[] imageInByte;
@@ -138,8 +111,7 @@ public class RegisterController {
                     imageInByte = baos.toByteArray();
                     baos.close();
 
-                    String url = URL + "register";
-                    System.out.println(url + " 1");
+                    String url = URL + "?operation=register";
                     connection = (HttpURLConnection) new URL(url).openConnection();
                     connection.setRequestMethod("POST");
                     connection.setDoOutput(true);
@@ -157,9 +129,7 @@ public class RegisterController {
                     wr.flush();
                     wr.close();
 
-
-
-                    if (HttpURLConnection.HTTP_OK == connection.getResponseCode()) {
+                    /*if (HttpURLConnection.HTTP_OK == connection.getResponseCode()) {
                         BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                         String line = in.readLine();
 
@@ -178,7 +148,7 @@ public class RegisterController {
                         alert.setContentText("Ошибка " + connection.getResponseCode());
                         alert.setHeaderText("Ошибка!");
                         alert.showAndWait();
-                    }
+                    }*/
                 } catch (Throwable cause) {
                     cause.getStackTrace();
                 } finally {
@@ -189,7 +159,7 @@ public class RegisterController {
             }
 
             try {
-                String url = URL + "register?login=" +login + "&password=" + password +
+                String url = URL + "?operation=register&login=" +login + "&password=" + password +
                         "&name=" + name + "&surname=" + secondName;
                 connection = (HttpURLConnection) new URL(url).openConnection();
                 connection.setRequestMethod("GET");
@@ -199,7 +169,7 @@ public class RegisterController {
 
                 connection.connect();
 
-                System.out.println(url);
+               /* System.out.println(url);
                 if (HttpURLConnection.HTTP_OK == connection.getResponseCode()) {
                     BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                     String line = in.readLine();
@@ -226,8 +196,22 @@ public class RegisterController {
                     alert.setContentText("Ошибка:" + connection.getResponseCode());
                     alert.setHeaderText("Ошибка!");
                     alert.showAndWait();
-                }
+                }*/
 
+                if(connection.getResponseCode() == HttpURLConnection.HTTP_OK){
+                    List<String> cookies = connection.getHeaderFields().get(CookiesWork.COOKIES_HEADER);
+                    String[] vals = cookies.get(0).split("=");
+                    CookiesWork.cookie = vals[1];
+
+
+                    // Смена Activity
+                }else if(connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND){
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setHeaderText(null);
+                    alert.setContentText("Произошла ошибка! \n Возможно логин уже занят.");
+                    alert.showAndWait();
+                    return;
+                }
             } catch (Throwable cause) {
                 cause.getStackTrace();
             } finally {
@@ -235,7 +219,6 @@ public class RegisterController {
                     connection.disconnect();
                 }
             }
-            loginScene(event, false);
     }
 
 
@@ -274,36 +257,6 @@ public class RegisterController {
         stage.setScene(scene);
 
         stage.show();*/
-    }
-
-    private boolean checkSpace(String str){
-        if(str.contains(" ")){
-            return false;
-        }else
-            return true;
-    }
-
-    private boolean checkForInputName(String name){
-        if(name == null){
-            return false;
-        }
-        if(name.length()>40)
-            return false;
-        for(int i = 0; i < name.length();i++){
-            Character ch = name.charAt(i);
-            if(!Character.isLetter(ch))
-                return false;
-        }
-        return checkSpace(name);
-    }
-
-    private String firstUpperCase(String word){
-        if(word == null || word.isEmpty()) return "";
-        return word.substring(0, 1).toUpperCase() + word.substring(1);
-    }
-
-    private String deleteSpace(String str){
-        return str.replaceAll(" ","");
     }
 
 }

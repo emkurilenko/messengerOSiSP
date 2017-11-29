@@ -14,17 +14,14 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Paint;
-import javafx.stage.Stage;
-import org.omg.CORBA.Request;
 
-import javax.xml.ws.Response;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class LoginController {
@@ -57,8 +54,18 @@ public class LoginController {
 
     @FXML
     void bntClickLogin(MouseEvent event) {
+        String login = loginUser.getText();
+        String password = passLogin.getText();
+        if(login.isEmpty() || password.isEmpty()){
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setHeaderText(null);
+            alert.setContentText("Введите данные! ");
+            alert.showAndWait();
+            return;
+        }
+
         try {
-            String url = URL + "login?login=" + loginUser.getText().toString() + "&password=" + passLogin.getText().toString();
+            String url = URL + "?operation=login&login=" + loginUser.getText().toString() + "&password=" + passLogin.getText().toString();
 
             connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("GET");
@@ -67,13 +74,32 @@ public class LoginController {
             connection.setReadTimeout(250);
 
             connection.connect();
-            if(HttpURLConnection.HTTP_OK == connection.getResponseCode()){
+
+
+
+            if(connection.getResponseCode() == HttpURLConnection.HTTP_OK){
+                List<String> cookies = connection.getHeaderFields().get(CookiesWork.COOKIES_HEADER);
+                String[] vals = cookies.get(0).split("=");
+                CookiesWork.cookie = vals[1];
+
+
+                //Смена Активити
+            }else if(connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND){
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setHeaderText(null);
+                alert.setContentText("Пользователь существует! \nИли проблемы с сетью!");
+            }
+            System.out.println(CookiesWork.cookie);
+
+
+            /*if(HttpURLConnection.HTTP_OK == connection.getResponseCode()){
+                System.out.println("123");
                 BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 String line = in.readLine();
-                if(line == null) {
+                if(line.equals("0")) {
                     Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setContentText("Пользователь не найден");
-                    alert.setHeaderText("Ошибка!");
+                    alert.setContentText("Проверьте логин и пароль. \nИли зарегестрируйтесь!");
+                    alert.setHeaderText("Пользователь не найден");
                     alert.showAndWait();
                 }
                 System.out.println(line);
@@ -83,7 +109,7 @@ public class LoginController {
                 alert.setContentText("Ошибка подключения " + connection.getResponseCode());
                 alert.setHeaderText("Ошибка!");
                 alert.showAndWait();
-            }
+            }*/
 
         }catch (Throwable cause){
             cause.getStackTrace();
