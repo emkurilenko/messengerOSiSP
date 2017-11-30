@@ -14,6 +14,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,7 +30,7 @@ public class LoginController {
     private HttpURLConnection connection = null;
     //final private String URL = "http://192.168.137.1:8080/mess/";
     final private String URL = "http://localhost:8080/mess/";
-
+    private Scene scene;
 
     @FXML
     private JFXTextField loginUser;
@@ -41,14 +43,9 @@ public class LoginController {
         this.passLogin.setText(passLogin);
     }
 
-    @FXML
-    private JFXPasswordField passLogin;
-
-    @FXML
-    private JFXButton btnLogin;
-
-    @FXML
-    private JFXButton btnRegister;
+    @FXML private JFXPasswordField passLogin;
+    @FXML private JFXButton btnLogin;
+    @FXML private JFXButton btnRegister;
 
 
 
@@ -56,6 +53,8 @@ public class LoginController {
     void bntClickLogin(MouseEvent event) {
         String login = loginUser.getText();
         String password = passLogin.getText();
+        System.out.println(login);
+        System.out.println(password);
         if(login.isEmpty() || password.isEmpty()){
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setHeaderText(null);
@@ -65,7 +64,7 @@ public class LoginController {
         }
 
         try {
-            String url = URL + "?operation=login&login=" + loginUser.getText().toString() + "&password=" + passLogin.getText().toString();
+            String url = URL + "?operation=login&login=" + login + "&password=" + password;
 
             connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("GET");
@@ -81,13 +80,24 @@ public class LoginController {
                 List<String> cookies = connection.getHeaderFields().get(CookiesWork.COOKIES_HEADER);
                 String[] vals = cookies.get(0).split("=");
                 CookiesWork.cookie = vals[1];
+                connection.disconnect();
 
-
+                (((Node)event.getSource()).getScene()).getWindow().hide();
+                FXMLLoader fmxlLoader = new FXMLLoader(getClass().getResource("/chatScene.fxml"));
+                Parent window = (Pane) fmxlLoader.load();
+                Scene scene = new Scene(window);
+                Stage stage = new Stage();
+                stage.setTitle("Messenger");
+                stage.setScene(scene);
+                stage.show();
                 //Смена Активити
             }else if(connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND){
+                System.out.println("pidor");
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setHeaderText(null);
-                alert.setContentText("Пользователь существует! \nИли проблемы с сетью!");
+                alert.setContentText("Пользователь не существует! \nПроверте пароль \nИли у вас проблемы с сетью!");
+                alert.showAndWait();
+                return;
             }
             System.out.println(CookiesWork.cookie);
 
