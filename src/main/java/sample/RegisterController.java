@@ -26,6 +26,7 @@ import java.awt.image.DataBufferByte;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
@@ -145,21 +146,15 @@ public class RegisterController implements Initializable {
                     }
                 }
             }
-
             try {
-                System.out.println(name + secondName);
                 String url = URL + "?operation=register&login=" +login + "&password=" + password +
-                        "&name=" + name + "&surname=" + secondName;
+                        "&name=" + URLEncoder.encode(name,"UTF-8") + "&surname=" + URLEncoder.encode(secondName,"UTF-8");
+
                 connection = (HttpURLConnection) new URL(url).openConnection();
                 connection.setRequestMethod("GET");
-                //connection.setDefaultUseCaches(false);
-                //connection.setRequestProperty("charset", "windows-1251");
-                //connection.setConnectTimeout(250);
-                //connection.setReadTimeout(250);
+
 
                 connection.connect();
-                System.out.println(name + secondName);
-                System.out.println(connection.getResponseCode());
                 if(connection.getResponseCode() == HttpURLConnection.HTTP_OK){
                     List<String> cookies = connection.getHeaderFields().get(CookiesWork.COOKIES_HEADER);
                     String[] vals = cookies.get(0).split("=");
