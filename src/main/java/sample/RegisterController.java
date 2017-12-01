@@ -42,7 +42,6 @@ import static sample.CheckInput.firstUpperCase;
 
 public class RegisterController implements Initializable {
     private HttpURLConnection connection = null;
-    final private String URL = "http://192.168.137.1:8080/mess/";
     private File fileImage;
     private boolean check;
     private String login;
@@ -60,7 +59,7 @@ public class RegisterController implements Initializable {
 
     @FXML
     void btnCancel(MouseEvent event) throws IOException {
-        loginScene(event,true);
+        newScene(event,"/loginScene.fxml","Login");
     }
 
     @FXML
@@ -103,7 +102,7 @@ public class RegisterController implements Initializable {
                     imageInByte = baos.toByteArray();
                     baos.close();
 
-                    String url = URL + "?operation=register";
+                    String url = Const.URL + "?operation=register";
                     connection = (HttpURLConnection) new URL(url).openConnection();
                     connection.setRequestMethod("POST");
                     connection.setDoOutput(true);
@@ -147,9 +146,8 @@ public class RegisterController implements Initializable {
                 }
             }
             try {
-                String url = URL + "?operation=register&login=" +login + "&password=" + password +
+                String url = Const.URL + "?operation=register&login=" +login + "&password=" + password +
                         "&name=" + URLEncoder.encode(name,"UTF-8") + "&surname=" + URLEncoder.encode(secondName,"UTF-8");
-
                 connection = (HttpURLConnection) new URL(url).openConnection();
                 connection.setRequestMethod("GET");
 
@@ -163,14 +161,15 @@ public class RegisterController implements Initializable {
                     System.out.println(CookiesWork.cookie);
                     // Смена Activity
 
-                    (((Node)event.getSource()).getScene()).getWindow().hide();
+                  /*  (((Node)event.getSource()).getScene()).getWindow().hide();
                     FXMLLoader fmxlLoader = new FXMLLoader(getClass().getResource("/chatScene.fxml"));
                     Parent window = (Pane) fmxlLoader.load();
                     Scene scene = new Scene(window);
                     Stage stage = new Stage();
                     stage.setTitle("Messenger");
                     stage.setScene(scene);
-                    stage.show();
+                    stage.show();*/
+                    newScene(event,"/chatScene.fxml","Messeger");
                 }else if(connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND){
                     Alert alert = new Alert(Alert.AlertType.WARNING);
                     alert.setHeaderText(null);
@@ -207,8 +206,8 @@ public class RegisterController implements Initializable {
         }
     }
 
-    private void loginScene(MouseEvent event, boolean cancel) throws IOException {
-      //  (((Node)event.getSource()).getScene()).getWindow().hide();
+    private void newScene(MouseEvent event, String fxml,String name) throws IOException {
+      /*//  (((Node)event.getSource()).getScene()).getWindow().hide();
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/loginScene.fxml"));
         Parent parent = loader.load();
         //Parent parent = FXMLLoader.load(getClass().getResource("/loginScene.fxml"));
@@ -217,12 +216,21 @@ public class RegisterController implements Initializable {
         loginController.setLoginUser(idLogin.getText());
         loginController.setPassLogin(idPass.getText());
         Main.primaryStage.show();
-        /*Scene scene = new Scene(parent);
+        *//*Scene scene = new Scene(parent);
         Stage stage = new Stage();
         stage.setTitle("Login");
         stage.setScene(scene);
 
         stage.show();*/
+
+        (((Node)event.getSource()).getScene()).getWindow().hide();
+        FXMLLoader fmxlLoader = new FXMLLoader(getClass().getResource(fxml));
+        Parent window = (Pane) fmxlLoader.load();
+        Scene scene = new Scene(window);
+        Stage stage = new Stage();
+        stage.setTitle(name);
+        stage.setScene(scene);
+        stage.show();
     }
 
     @Override

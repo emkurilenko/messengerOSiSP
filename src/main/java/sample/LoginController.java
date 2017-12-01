@@ -23,26 +23,16 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.ResourceBundle;
 
 public class LoginController {
     private HttpURLConnection connection = null;
-    //final private String URL = "http://192.168.137.1:8080/mess/";
-    final private String URL = "http://localhost:8080/mess/";
     private Scene scene;
 
     @FXML
     private JFXTextField loginUser;
-
-    public void setLoginUser(String loginUser) {
-        this.loginUser.setText(loginUser);
-    }
-
-    public void setPassLogin(String passLogin) {
-        this.passLogin.setText(passLogin);
-    }
-
     @FXML private JFXPasswordField passLogin;
     @FXML private JFXButton btnLogin;
     @FXML private JFXButton btnRegister;
@@ -63,9 +53,17 @@ public class LoginController {
             return;
         }
 
-        try {
-            String url = URL + "?operation=login&login=" + login + "&password=" + password;
+       /* if(!CheckInput.checkForLogin(login) || !CheckInput.checkPassword(password)){
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setHeaderText("Ошибка ввода!");
+            alert.setContentText("Логин: Символов>2. Только буквы и цифры");
+            alert.showAndWait();
+            return;
+        }*/
 
+        try {
+            String url = Const.URL + "?operation=login&login=" + URLEncoder.encode(login,"UTF-8") + "&password=" + URLEncoder.encode(password,"UTF-8");
+            System.out.println(url);
             connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("GET");
             connection.setDefaultUseCaches(false);
@@ -73,15 +71,15 @@ public class LoginController {
             connection.setReadTimeout(250);
 
             connection.connect();
-
+            System.out.println("Connect");
 
 
             if(connection.getResponseCode() == HttpURLConnection.HTTP_OK){
+                System.out.println("login");
                 List<String> cookies = connection.getHeaderFields().get(CookiesWork.COOKIES_HEADER);
                 String[] vals = cookies.get(0).split("=");
                 CookiesWork.cookie = vals[1];
                 connection.disconnect();
-
                 (((Node)event.getSource()).getScene()).getWindow().hide();
                 FXMLLoader fmxlLoader = new FXMLLoader(getClass().getResource("/chatScene.fxml"));
                 Parent window = (Pane) fmxlLoader.load();
@@ -89,16 +87,17 @@ public class LoginController {
                 Stage stage = new Stage();
                 stage.setTitle("Messenger");
                 stage.setScene(scene);
+                stage.setResizable(false);
                 stage.show();
                 //Смена Активити
             }else if(connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND){
-                System.out.println("pidor");
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setHeaderText(null);
                 alert.setContentText("Пользователь не существует! \nПроверте пароль \nИли у вас проблемы с сетью!");
                 alert.showAndWait();
                 return;
             }
+            System.out.println(connection.getResponseCode());
             System.out.println(CookiesWork.cookie);
 
 
@@ -132,7 +131,7 @@ public class LoginController {
 
     @FXML
     void btnClickRegister(MouseEvent event) throws IOException {
-       // (((Node)event.getSource()).getScene()).getWindow().hide();
+       (((Node)event.getSource()).getScene()).getWindow().hide();
         /*Parent parent = FXMLLoader.load(getClass().getResource("/registerScene.fxml"));
         Scene scene = new Scene(parent);
         Stage stage = new Stage();
