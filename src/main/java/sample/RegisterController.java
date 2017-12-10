@@ -4,15 +4,11 @@ import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXPasswordField;
 import com.jfoenix.controls.JFXTextField;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -22,25 +18,18 @@ import javafx.stage.Stage;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
 import java.util.List;
-import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.CREATE_NEW;
-import static sample.CheckInput.checkForInputName;
-import static sample.CheckInput.deleteSpace;
-import static sample.CheckInput.firstUpperCase;
+import static sample.CheckInput.*;
 
-public class RegisterController implements Initializable {
+public class RegisterController {
     private HttpURLConnection connection = null;
     private File fileImage;
     private boolean check;
@@ -59,21 +48,22 @@ public class RegisterController implements Initializable {
 
     @FXML
     void btnCancel(MouseEvent event) throws IOException {
-        newScene(event,"/loginScene.fxml","Login");
+        newScene(event,"views/loginScene.fxml","Login");
     }
 
     @FXML
     void btnRegister(MouseEvent event) throws Exception {
+        if(!Const.checkConnection()){
+            Const.showErrorDialog("Error connection!", "No connection to the server.");
+            return;
+        }
         name = idName.getText();
         secondName = idSecondName.getText();
         login = idLogin.getText();
         password = idPass.getText();
 
         if(name.isEmpty() || secondName.isEmpty() || login.isEmpty() || password.isEmpty()) {
-            Alert alert1 = new Alert(Alert.AlertType.WARNING);
-            alert1.setHeaderText(null);
-            alert1.setContentText("Одно из полей - пустое.");
-            alert1.showAndWait();
+            Const.showErrorDialog(null,"One of the fields is empty.");
             return;
         }
 
@@ -85,16 +75,13 @@ public class RegisterController implements Initializable {
         secondName = firstUpperCase(secondName);
 
         if (check &&(!checkForInputName(name) || !checkForInputName(secondName))) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setHeaderText(null);
-            alert.setContentText("Ошибка ввода.");
-            alert.showAndWait();
+            Const.showErrorDialog("Error Input", "Check input!");
             return;
         }
             if (fileImage != null) {
                 try {
                     byte[] imageInByte;
-                    BufferedImage original = ImageIO.read(fileImage);
+                    BufferedImage original = Compression.compress(ImageIO.read(fileImage),0.5f);
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
                     ImageIO.write(original, "jpg", baos);
@@ -111,7 +98,6 @@ public class RegisterController implements Initializable {
                     connection.setReadTimeout(250);
                     connection.setRequestProperty("Content-Type", "application/octet-stream");
                     connection.setRequestProperty("charset", "utf-8");
-                    //connection.setRequestProperty("Content-Length", Integer.toString(imageInByte.length));
                     connection.connect();
 
 
@@ -159,22 +145,9 @@ public class RegisterController implements Initializable {
                     CookiesWork.cookie = vals[1];
                     connection.disconnect();
                     System.out.println(CookiesWork.cookie);
-                    // Смена Activity
-
-                  /*  (((Node)event.getSource()).getScene()).getWindow().hide();
-                    FXMLLoader fmxlLoader = new FXMLLoader(getClass().getResource("/chatScene.fxml"));
-                    Parent window = (Pane) fmxlLoader.load();
-                    Scene scene = new Scene(window);
-                    Stage stage = new Stage();
-                    stage.setTitle("Messenger");
-                    stage.setScene(scene);
-                    stage.show();*/
-                    newScene(event,"/chatScene.fxml","Messeger");
+                    newScene(event,"views/chatScene.fxml","MessegerPSU");
                 }else if(connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND){
-                    Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setHeaderText(null);
-                    alert.setContentText("Произошла ошибка! \n Возможно логин уже занят.");
-                    alert.showAndWait();
+                    Const.showErrorDialog(null,"The login may already be busy.");
                     return;
                 }
             } catch (Throwable cause) {
@@ -207,24 +180,8 @@ public class RegisterController implements Initializable {
     }
 
     private void newScene(MouseEvent event, String fxml,String name) throws IOException {
-      /*//  (((Node)event.getSource()).getScene()).getWindow().hide();
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/loginScene.fxml"));
-        Parent parent = loader.load();
-        //Parent parent = FXMLLoader.load(getClass().getResource("/loginScene.fxml"));
-        Main.primaryStage.setScene(new Scene(parent));
-        LoginController loginController = loader.getController();
-        loginController.setLoginUser(idLogin.getText());
-        loginController.setPassLogin(idPass.getText());
-        Main.primaryStage.show();
-        *//*Scene scene = new Scene(parent);
-        Stage stage = new Stage();
-        stage.setTitle("Login");
-        stage.setScene(scene);
-
-        stage.show();*/
-
         (((Node)event.getSource()).getScene()).getWindow().hide();
-        FXMLLoader fmxlLoader = new FXMLLoader(getClass().getResource(fxml));
+        FXMLLoader fmxlLoader = new FXMLLoader(getClass().getClassLoader().getResource(fxml));
         Parent window = (Pane) fmxlLoader.load();
         Scene scene = new Scene(window);
         Stage stage = new Stage();
@@ -233,8 +190,5 @@ public class RegisterController implements Initializable {
         stage.show();
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-
-    }
 }
+

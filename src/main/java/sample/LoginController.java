@@ -4,6 +4,7 @@ import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXPasswordField;
 import com.jfoenix.controls.JFXTextField;
 import com.jfoenix.validation.RequiredFieldValidator;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
@@ -13,6 +14,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
@@ -20,14 +22,11 @@ import javafx.stage.Stage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class LoginController {
+public class LoginController{
     private HttpURLConnection connection = null;
     private Scene scene;
 
@@ -41,10 +40,16 @@ public class LoginController {
 
     @FXML
     void bntClickLogin(MouseEvent event) {
+        if(!Const.checkConnection()){
+            Const.showErrorDialog("Error connection!", "No connection to the server.");
+            return;
+        }
+
         String login = loginUser.getText();
         String password = passLogin.getText();
         System.out.println(login);
         System.out.println(password);
+
         if(login.isEmpty() || password.isEmpty()){
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setHeaderText(null);
@@ -63,7 +68,6 @@ public class LoginController {
 
         try {
             String url = Const.URL + "?operation=login&login=" + URLEncoder.encode(login,"UTF-8") + "&password=" + URLEncoder.encode(password,"UTF-8");
-            System.out.println(url);
             connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("GET");
             connection.setDefaultUseCaches(false);
@@ -71,55 +75,30 @@ public class LoginController {
             connection.setReadTimeout(250);
 
             connection.connect();
-            System.out.println("Connect");
-
 
             if(connection.getResponseCode() == HttpURLConnection.HTTP_OK){
-                System.out.println("login");
                 List<String> cookies = connection.getHeaderFields().get(CookiesWork.COOKIES_HEADER);
                 String[] vals = cookies.get(0).split("=");
                 CookiesWork.cookie = vals[1];
                 connection.disconnect();
+
                 (((Node)event.getSource()).getScene()).getWindow().hide();
-                FXMLLoader fmxlLoader = new FXMLLoader(getClass().getResource("/chatScene.fxml"));
+                FXMLLoader fmxlLoader = new FXMLLoader(getClass().getClassLoader().getResource("views/chatScene.fxml"));
                 Parent window = (Pane) fmxlLoader.load();
                 Scene scene = new Scene(window);
                 Stage stage = new Stage();
-                stage.setTitle("Messenger");
+                stage.getIcons().add(new Image(getClass().getClassLoader().getResource("images/plug.png").toString()));
+                stage.setTitle("MessengerPSU");
                 stage.setScene(scene);
                 stage.setResizable(false);
                 stage.show();
                 //Смена Активити
             }else if(connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND){
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setHeaderText(null);
-                alert.setContentText("Пользователь не существует! \nПроверте пароль \nИли у вас проблемы с сетью!");
-                alert.showAndWait();
+                Const.showErrorDialog(null,"User not found/password field.");
                 return;
             }
             System.out.println(connection.getResponseCode());
             System.out.println(CookiesWork.cookie);
-
-
-            /*if(HttpURLConnection.HTTP_OK == connection.getResponseCode()){
-                System.out.println("123");
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                String line = in.readLine();
-                if(line.equals("0")) {
-                    Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setContentText("Проверьте логин и пароль. \nИли зарегестрируйтесь!");
-                    alert.setHeaderText("Пользователь не найден");
-                    alert.showAndWait();
-                }
-                System.out.println(line);
-            }else{
-                System.out.println("fail "+connection.getResponseCode() + ", " +connection.getResponseMessage());
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setContentText("Ошибка подключения " + connection.getResponseCode());
-                alert.setHeaderText("Ошибка!");
-                alert.showAndWait();
-            }*/
-
         }catch (Throwable cause){
             cause.getStackTrace();
         }finally {
@@ -131,17 +110,23 @@ public class LoginController {
 
     @FXML
     void btnClickRegister(MouseEvent event) throws IOException {
+        if(!Const.checkConnection()){
+            Const.showErrorDialog("Error connection!", "No connection to the server.");
+            return;
+        }
        (((Node)event.getSource()).getScene()).getWindow().hide();
-        /*Parent parent = FXMLLoader.load(getClass().getResource("/registerScene.fxml"));
+        Parent parent = FXMLLoader.load(getClass().getClassLoader().getResource("views/registerScene.fxml"));
         Scene scene = new Scene(parent);
         Stage stage = new Stage();
         stage.setTitle("Register");
         stage.setScene(scene);
-        stage.show();*/
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/registerScene.fxml"));
-        Parent parent = loader.load();
-        Main.primaryStage.setScene(new Scene(parent));
-        Main.primaryStage.show();
+        stage.show();
+       // Main.primaryStage.setScene(new Scene(parent));
+       // Main.primaryStage.show();
     }
+
+
+
+
 
 }

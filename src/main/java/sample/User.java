@@ -1,5 +1,8 @@
 package sample;
 
+import javafx.scene.image.Image;
+
+import java.awt.image.BufferedImage;
 import java.io.InputStream;
 
 public class User {
@@ -8,15 +11,10 @@ public class User {
     private String password;
     private String name;
     private String surname;
-    private String picture;
+    //private byte[] picture;
+    private BufferedImage picture;
 
-    public User(int id, String login, String password, String name, String surname, String picture) {
-        this.id = id;
-        this.login = login;
-        this.password = password;
-        this.name = name;
-        this.surname = surname;
-        this.picture = picture;
+    public User() {
     }
 
     public User(int id, String login, String password) {
@@ -30,21 +28,21 @@ public class User {
         this.password = password;
     }
 
-    public User(String login, String password, String name, String surname) {
+    public User(String login, String name, String surname) {
         this.login = login;
         this.password = password;
         this.name = name;
         this.surname = surname;
+        //this.picture = picture;
     }
 
-    public User(String login, String password, String name, String surname, String picture) {
-        this.login = login;
-        this.password = password;
+    public void setName(String name) {
         this.name = name;
-        this.surname = surname;
-        this.picture = picture;
     }
 
+    public void setSurname(String surname) {
+        this.surname = surname;
+    }
 
 
     public String getName() {
@@ -55,16 +53,21 @@ public class User {
         return surname;
     }
 
-    public String getPicture() {
+    public BufferedImage getPicture() {
         return picture;
     }
+
+    public void setPicture(BufferedImage picture) {
+        this.picture = picture;
+    }
+
 
     @Override
     public String toString() {
         return "User{" +
-                "id=" + id +
-                ", login='" + login + '\'' +
-                ", password='" + password + '\'' +
+                "login='" + login + '\'' +
+                ", name='" + name + '\'' +
+                ", surname='" + surname + '\'' +
                 '}';
     }
 
