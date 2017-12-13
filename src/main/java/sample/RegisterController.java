@@ -81,7 +81,7 @@ public class RegisterController {
             if (fileImage != null) {
                 try {
                     byte[] imageInByte;
-                    BufferedImage original = Compression.compress(ImageIO.read(fileImage),0.5f);
+                    BufferedImage original = Compression.compress(ImageIO.read(fileImage),0.3f);
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
                     ImageIO.write(original, "jpg", baos);

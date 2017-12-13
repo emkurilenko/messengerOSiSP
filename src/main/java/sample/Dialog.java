@@ -6,9 +6,6 @@ public class Dialog {
     private String second;
     private String name;
     private BufferedImage picture;
-    private String lastMessage;
-    private long date;
-    private boolean unread;
 
     public BufferedImage getPicture() {
         return picture;
@@ -25,6 +22,10 @@ public class Dialog {
     public void setName(String name) {
         this.name = name;
     }
+
+    private String lastMessage;
+    private long date;
+    private boolean unread;
 
     public Dialog() {
     }
